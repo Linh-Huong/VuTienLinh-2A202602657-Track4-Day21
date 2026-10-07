@@ -1,0 +1,9 @@
+dataset,frame_id,experiment_type,swept_parameter,swept_value,voxel_size_m,distance_threshold_m,eps_m,min_points,ground_points,obstacle_points,n_clusters,d_min_m,latency_p50_ms,latency_p95_ms
+kitti_mini,000011,sweep_dbscan_eps,eps_m,0.3,0.1,0.2,0.3,10,9996,10433,71,1.57,39.1,45.06
+kitti_mini,000011,sweep_dbscan_eps,eps_m,0.5,0.1,0.2,0.5,10,9996,10433,46,1.57,41.81,43.66
+kitti_mini,000011,sweep_dbscan_eps,eps_m,0.8,0.1,0.2,0.8,10,9996,10433,35,1.57,46.57,54.34
+kitti_mini,000011,sweep_ransac_distance_threshold,distance_threshold_m,0.1,0.1,0.1,0.5,10,8378,12051,69,1.57,41.53,44.64
+kitti_mini,000011,sweep_ransac_distance_threshold,distance_threshold_m,0.15,0.1,0.15,0.5,10,9674,10755,48,1.57,41.18,45.64
+kitti_mini,000011,sweep_ransac_distance_threshold,distance_threshold_m,0.2,0.1,0.2,0.5,10,9996,10433,46,1.57,40.69,46.45
+kitti_mini,000011,sweep_ransac_distance_threshold,distance_threshold_m,0.3,0.1,0.3,0.5,10,10501,9928,46,1.57,39.83,42.23
+kitti_mini,000011,sweep_ransac_distance_threshold,distance_threshold_m,0.45,0.1,0.45,0.5,10,12248,8181,44,1.57,39.05,43.67
