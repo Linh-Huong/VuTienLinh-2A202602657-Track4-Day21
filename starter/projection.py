@@ -32,7 +32,10 @@ def velo_to_cam(points_xyz: np.ndarray, calib: KittiCalib) -> np.ndarray:
       3. Trả về 3 cột đầu.
     Tự kiểm: một điểm velodyne (10, 0, 0) phải có z_cam ~ 10 (phía trước camera).
     """
-    raise NotImplementedError("TODO(CP2): cài đặt velo_to_cam")
+    n = len(points_xyz)
+    homo = np.hstack([points_xyz, np.ones((n, 1), dtype=points_xyz.dtype)])
+    cam_homo = homo @ calib.T_cam_velo.T
+    return cam_homo[:, :3]
 
 
 def cam_to_image(points_cam: np.ndarray, P2: np.ndarray, image_shape: tuple[int, ...],
@@ -52,7 +55,30 @@ def cam_to_image(points_cam: np.ndarray, P2: np.ndarray, image_shape: tuple[int,
       3. Chia cho s để có (u, v). Chỉ chia với điểm có depth > min_depth.
       4. Lọc theo kích thước ảnh image_shape[:2] = (H, W).
     """
-    raise NotImplementedError("TODO(CP2): cài đặt cam_to_image")
+    n = len(points_cam)
+    final_mask = np.zeros(n, dtype=bool)
+
+    finite_mask = np.isfinite(points_cam).all(axis=1)
+    depth_mask = finite_mask & (points_cam[:, 2] > min_depth)
+
+    if not np.any(depth_mask):
+        return np.empty((0, 2), dtype=np.float32), np.empty((0,), dtype=np.float32), final_mask
+
+    pts_valid = points_cam[depth_mask]
+    homo = np.hstack([pts_valid, np.ones((len(pts_valid), 1), dtype=pts_valid.dtype)])
+    proj = homo @ P2.T
+    s = proj[:, 2:3]
+    uv_valid = proj[:, :2] / s
+
+    h, w = image_shape[:2]
+    u = uv_valid[:, 0]
+    v = uv_valid[:, 1]
+    in_bounds = (u >= 0) & (u < w) & (v >= 0) & (v < h)
+
+    final_mask[depth_mask] = in_bounds
+    uv = uv_valid[in_bounds]
+    depth = pts_valid[in_bounds, 2]
+    return uv, depth, final_mask
 
 
 def project_velo_to_image(points: np.ndarray, calib: KittiCalib, image_shape: tuple[int, ...]):

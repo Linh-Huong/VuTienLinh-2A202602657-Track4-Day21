@@ -26,7 +26,7 @@ Bảng hoặc plot số liệu, kèm ảnh/video demo. Ghi rõ đường dẫn f
 |---|---|---|---|
 | [ĐIỀN] | | | |
 
-![demo](../results/figures/[ĐIỀN].png)
+![demo](../results/figures/demo_d_obstacle_000011.png)
 
 ## 3. Failure case
 
@@ -46,9 +46,13 @@ Use-case cụ thể (ADAS / robot / drone), trade-off và bước tiếp theo.
 
 Các lệnh tái tạo lại toàn bộ kết quả từ repo sạch.
 
-```bash
-[ĐIỀN]
-```
+`ash
+# 1. Chạy demo phát hiện vật cản (Topic D)
+python -m src.obstacle_detector --data-root data/kitti_mini --frame 000011
+
+# 2. Tự kiểm tra projection
+python -m src.test_projection
+`
 
 ## 6. Khai báo sử dụng AI
 
