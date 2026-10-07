@@ -44,9 +44,23 @@ File số liệu chi tiết: [`results/obstacle_benchmark.csv`](../results/obsta
 
 Nêu khi nào hệ thống hoặc phương pháp fail, vì sao fail, và liên hệ tới lớp nào trong 6 lớp debug: I/O, Geometry, Time, Preprocess, Model, Metric.
 
-![failure](../results/figures/fail_[ĐIỀN].png)
+### Case 1: Vật thấp (< 0.5 m) bị RANSAC coi là mặt đất
+![failure 1](../results/figures/fail_01_low_obstacle_ransac.png)
 
-[ĐIỀN]
+- **Trường hợp:** Vật cản thấp (chiều cao dưới 0.5 m sát sàn như pallet hàng, gờ giảm tốc, chân người đi bộ) trên KITTI frame 000011 khi cài đặt ngưỡng lọc mặt phẳng RANSAC `distance_threshold` từ 0.20m lên 0.45m.
+- **Quan sát:** Ở ngưỡng chuẩn `distance_threshold = 0.15m`, các điểm của vật thấp (chiều cao $h < 0.5m$ so với mặt đường) được nhận diện đầy đủ trong nhóm vật cản và đóng khung bounding box. Khi tăng ngưỡng lên `0.45m`, toàn bộ các điểm vật cản thấp (< 0.45m sát đất, tương đương hơn 2.250 điểm) bị RANSAC gán nhãn nhầm thành mặt đất (màu xám). Kết quả: vật cản thấp biến mất 100% trên bản đồ (False Negative), robot hoàn toàn không phát hiện được chướng ngại vật trước mặt.
+- **Nguyên nhân:** Thuật toán RANSAC giả định mặt đất là một mặt phẳng và coi mọi điểm cách mặt phẳng một khoảng $\le distance\_threshold$ đều là sàn đường. Do đó, bất kỳ vật thể nào có chiều cao thấp hơn ngưỡng lọc sẽ bị "gọt phẳng" hoàn toàn vào mặt đất.
+- **Lớp debug:** **Preprocess / Geometry** (Mô hình hình học mặt phẳng toàn cục quá thô và bước tiền xử lý chọn siêu tham số ngưỡng khoảng cách `distance_threshold` quá lỏng).
+- **Cách phát hiện khi chạy thật:** Xây dựng biểu đồ phân bố chiều cao tương đối của các điểm so với mặt đất (Height-above-ground histogram). Nếu phát hiện các cụm điểm mặt đất nhô cao cục bộ từ 0.1m đến 0.5m với mật độ bất thường, hệ thống phải kích hoạt cảnh báo rò rỉ vật cản thấp (Low-obstacle Ground Leakage).
+
+### Case 2: Hai người đứng gần nhau bị DBSCAN gộp thành một cụm
+![failure 2](../results/figures/fail_02_dbscan_merge_pedestrians.png)
+
+- **Trường hợp:** Hai người đi bộ đứng gần nhau (khoảng cách mép ~0.6m) tại tọa độ $X \in [12, 14]m, Y \in [-5.5, -5.0]m$ trên frame 000011 khi tăng bán kính gom cụm `eps` từ 0.35m lên 0.80m.
+- **Quan sát:** Ở `eps = 0.35m`, DBSCAN tách chính xác 2 người thành 2 cụm riêng biệt (`Cluster 1` và `Cluster 2`) với 2 bounding box độc lập, để lộ khe hở an toàn ở giữa. Khi tăng `eps = 0.80m`, hai người bị gộp chung vào 1 cụm duy nhất (1 bounding box to đùng bao trùm cả hai).
+- **Nguyên nhân:** Hiện tượng Under-segmentation trong mật độ cụm. Khi bán kính tìm kiếm lân cận $eps > 0.6m$, các điểm của người thứ nhất bắc cầu sang điểm của người thứ hai, biến hai vật cản độc lập thành một liên thông duy nhất. Robot sẽ hiểu nhầm đây là một vật cản kích thước lớn và không nhận biết được lối đi ở giữa.
+- **Lớp debug:** **Preprocess** (Chọn siêu tham số bán kính phân cụm `eps` quá lớn so với khoảng cách thực tế giữa các thực thể).
+- **Cách phát hiện khi chạy thật:** Giám sát kích thước hình học của bounding box (chiều dài, chiều rộng). Nếu một cụm được gán nhãn là pedestrian/dynamic obstacle nhưng kích thước vượt quá giới hạn người thông thường (> 1.2m bề ngang), kích hoạt cờ cảnh báo "Cluster Under-segmentation" để phân tách lại bằng thuật toán K-Means hoặc Hierarchical Clustering cục bộ.
 
 ## 4. Khuyến nghị nếu triển khai thật
 
@@ -65,7 +79,13 @@ python -m src.obstacle_detector --data-root data/kitti_mini --frame 000011
 # 2. Chạy thí nghiệm sweep benchmark (sinh CSV và đồ thị)
 python -m src.sweep_experiment --data-root data/kitti_mini --frame 000011 --n-runs 20
 
-# 3. Tự kiểm tra projection
+# 3. Vẽ biểu đồ benchmark
+python -m src.plot_sweep
+
+# 4. Sinh ảnh phân tích failure case
+python -m src.visualize_failure
+
+# 5. Tự kiểm tra projection
 python -m src.test_projection
 ```
 
