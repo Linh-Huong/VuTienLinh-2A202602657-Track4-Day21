@@ -1,0 +1,9 @@
+frame_id,condition,method,ground_points,obstacle_points,n_clusters,d_min_m,latency_ms
+000011,Normal (Road flat),RANSAC Plane,9996,10433,46,1.57,2.02
+000011,Normal (Road flat),Fixed Height (z<=-1.55m),5715,14714,80,1.57,0.07
+000015,Normal (Road flat),RANSAC Plane,6553,14901,83,3.27,1.53
+000015,Normal (Road flat),Fixed Height (z<=-1.55m),5031,16423,79,3.27,0.05
+000021,Normal (Road flat),RANSAC Plane,8809,16078,50,2.19,1.3
+000021,Normal (Road flat),Fixed Height (z<=-1.55m),4957,19930,58,2.19,0.06
+000011,Tilted Pitch 1.5 deg,RANSAC Plane,9743,10640,48,1.55,1.4
+000011,Tilted Pitch 1.5 deg,Fixed Height (z<=-1.55m),10308,10075,48,1.55,0.04
